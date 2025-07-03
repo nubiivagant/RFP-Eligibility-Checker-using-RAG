@@ -1,0 +1,1 @@
+config, doc_comparison, report_generator = init_services()

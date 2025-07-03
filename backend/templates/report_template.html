@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RFP Analysis Report</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+
+        body {
+            background: #f5f7fa;
+            color: #2d3748;
+            line-height: 1.6;
+            padding: 2rem;
+        }
+
+        .report-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4299e1 0%, #2b6cb0 100%);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .section {
+            padding: 2rem;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .section:last-child {
+            border-bottom: none;
+        }
+
+        h2 {
+            color: #2b6cb0;
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            border-radius: 9999px;
+            font-weight: 600;
+            margin: 1rem 0;
+        }
+
+        .status-pass {
+            background: #c6f6d5;
+            color: #2f855a;
+        }
+
+        .status-fail {
+            background: #fed7d7;
+            color: #c53030;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        th, td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        th {
+            background: #f7fafc;
+            font-weight: 600;
+            color: #4a5568;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        .risk-item {
+            background: #fff5f5;
+            color: #c53030;
+            padding: 1rem;
+            margin: 0.5rem 0;
+            border-radius: 8px;
+            font-weight: 500;
+        }
+
+        .checklist-item {
+            background: #f7fafc;
+            padding: 1rem;
+            margin: 0.5rem 0;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .score-card {
+            background: #ebf8ff;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+        }
+
+        .score-title {
+            font-size: 1.1rem;
+            color: #2b6cb0;
+            margin-bottom: 0.5rem;
+        }
+
+        .score-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #2d3748;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 2rem;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .btn-download {
+            background: #4299e1;
+            color: white;
+        }
+
+        .btn-share {
+            background: #48bb78;
+            color: white;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 1rem;
+            }
+
+            .header {
+                padding: 1.5rem;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .section {
+                padding: 1.5rem;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="report-container">
+        <div class="header">
+            <h1>RFP Analysis Report</h1>
+            <p>Generated on {{ date }}</p>
+        </div>
+
+        <div class="section">
+            <h2>Executive Summary</h2>
+            <div class="score-card">
+                <div class="score-title">Overall Score</div>
+                <div class="score-value">{{ scores.get('overall_score', 0)|round|int }}%</div>
+            </div>
+            <div class="status-badge {{ 'status-pass' if eligible else 'status-fail' }}">
+                {{ "Eligible" if eligible else "Not Eligible" }}
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Compliance Checklist</h2>
+            <table>
+                <tr>
+                    <th>Requirement</th>
+                    <th>Status</th>
+                </tr>
+                {% for key, value in conditions.items() %}
+                <tr>
+                    <td>{{ key|replace('_', ' ')|title }}</td>
+                    <td class="{{ 'status-pass' if value else 'status-fail' }}">
+                        {{ "✓" if value else "✗" }}
+                    </td>
+                </tr>
+                {% endfor %}
+            </table>
+
+            <h3>Required Qualifications Summary</h3>
+            <table class="qualifications-table">
+                <tr>
+                    <th>Requirement Type</th>
+                    <th>Details</th>
+                    <th>Status</th>
+                </tr>
+                {% for qual in qualifications %}
+                <tr>
+                    <td>{{ qual.type }}</td>
+                    <td>{{ qual.details }}</td>
+                    <td class="{{ 'status-pass' if qual.met else 'status-fail' }}">
+                        {{ "✓" if qual.met else "✗" }}
+                    </td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
+
+        <div class="section">
+            <h2>Technical Analysis</h2>
+            <div class="score-card">
+                <div class="score-title">Technical Match</div>
+                <div class="score-value">{{ scores.get('technical_match', 0)|round|int }}%</div>
+            </div>
+            <div class="score-card">
+                <div class="score-title">Requirement Coverage</div>
+                <div class="score-value">{{ scores.get('requirement_coverage', 0)|round|int }}%</div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Risk Analysis</h2>
+            {% for risk in risks %}
+            <p class="risk-item">• {{ risk }}</p>
+            {% endfor %}
+        </div>
+
+        <div class="section">
+            <h2>Submission Checklist</h2>
+            {% for item in checklist %}
+            <div class="checklist-item">☐ {{ item }}</div>
+            {% endfor %}
+        </div>
+
+        <div class="section">
+            <div class="action-buttons">
+                <a href="{{ download_url }}" class="btn btn-download" download>Download Report</a>
+                <a href="{{ share_url }}" class="btn btn-share" target="_blank">Share Report</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>RFP Analysis Tool</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            max-width: 600px;
+            width: 100%;
+            padding: 2.5rem;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .container:hover {
+            transform: translateY(-5px);
+        }
+
+        h1 {
+            color: #2d3748;
+            font-size: 2rem;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        .file-input-container {
+            margin-bottom: 1.5rem;
+        }
+
+        .file-input-label {
+            display: block;
+            color: #4a5568;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            margin-top: 0.5rem;
+            border: 2px dashed #cbd5e0;
+            border-radius: 8px;
+            padding: 1.5rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .file-input-wrapper:hover {
+            border-color: #4299e1;
+            background: #ebf8ff;
+        }
+
+        .file-input {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .file-input-text {
+            color: #718096;
+            font-size: 0.875rem;
+        }
+
+        .selected-file {
+            margin-top: 0.5rem;
+            font-size: 0.875rem;
+            color: #2b6cb0;
+        }
+
+        button {
+            width: 100%;
+            padding: 1rem;
+            background: #4299e1;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        button:hover {
+            background: #2b6cb0;
+            transform: translateY(-2px);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .loading {
+            text-align: center;
+            color: #4a5568;
+            margin-top: 1rem;
+            font-weight: 500;
+        }
+
+        .alert {
+            background: #fff5f5;
+            color: #c53030;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-top: 1rem;
+            font-size: 0.875rem;
+            border: 1px solid #feb2b2;
+        }
+
+        @media (max-width: 640px) {
+            .container {
+                padding: 1.5rem;
+            }
+
+            h1 {
+                font-size: 1.5rem;
+            }
+
+            button {
+                padding: 0.75rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>RFP Analysis Tool</h1>
+        <form id="uploadForm" method="post" enctype="multipart/form-data">
+            <div class="file-input-container">
+                <label class="file-input-label">RFP Document</label>
+                <div class="file-input-wrapper">
+                    <input type="file" name="rfp_document" class="file-input" accept=".pdf,.doc,.docx" required>
+                    <div class="file-input-text">
+                        <p>Drag and drop your RFP document here</p>
+                        <p>or click to browse</p>
+                    </div>
+                    <div class="selected-file" id="rfpFileName"></div>
+                </div>
+            </div>
+
+            <div class="file-input-container">
+                <label class="file-input-label">Company Document</label>
+                <div class="file-input-wrapper">
+                    <input type="file" name="company_document" class="file-input" accept=".pdf,.doc,.docx" required>
+                    <div class="file-input-text">
+                        <p>Drag and drop your company document here</p>
+                        <p>or click to browse</p>
+                    </div>
+                    <div class="selected-file" id="companyFileName"></div>
+                </div>
+            </div>
+
+            <button type="submit">Analyze Documents</button>
+        </form>
+        <div id="loading" class="loading">Processing...</div>
+        <div id="error" class="alert"></div>
+    </div>
+
+    <script>
+        // Update file name display
+        document.querySelectorAll('.file-input').forEach(input => {
+            input.addEventListener('change', function(e) {
+                const fileName = e.target.files[0]?.name || '';
+                const fileNameDisplay = input.name === 'rfp_document' 
+                    ? document.getElementById('rfpFileName')
+                    : document.getElementById('companyFileName');
+                fileNameDisplay.textContent = fileName;
+            });
+        });
+
+        // Form submission handling
+        document.getElementById('uploadForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const loading = document.getElementById('loading');
+            const error = document.getElementById('error');
+            
+            loading.style.display = 'block';
+            error.style.display = 'none';
+            
+            try {
+                const formData = new FormData(e.target);
+                const response = await fetch('/api/analyze', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                if (data.status === 'success' && data.redirect_url) {
+                    window.location.href = data.redirect_url;
+                } else {
+                    throw new Error(data.error || 'Failed to generate report');
+                }
+            } catch (err) {
+                error.textContent = err.message;
+                error.style.display = 'block';
+            } finally {
+                loading.style.display = 'none';
+            }
+        };
+    </script>
+</body>
+</html>
