@@ -19,13 +19,12 @@ This intelligent tool evaluates a vendor’s eligibility for an RFP (Request for
 
 | Component            | Technology                           |
 |----------------------|--------------------------------------|
-| Backend Framework    | Flask + Werkzeug                     |
+| Backend Framework    | Flask                      |
 | Vector Store         | ChromaDB                             |
-| Embedding Models     | SentenceTransformers / Groq Embedding |
+| Embedding Models     | SentenceTransformers |
 | LLM Interface        | Groq API (Mixtral) or fallback       |
-| PDF Parsing          | PyMuPDF, PyPDF2                      |
-| Report Generation    | PDFKit + Jinja2                      |
-| Async Processing     | asyncio                              |
+| PDF Parsing          | PyMuPDF                   |
+| Report Generation    | PDFKit                     |
 
 ---
 
